@@ -9,7 +9,7 @@ Typically, three pyramidal dice are used with 2 "positive" corners and 2 "null" 
 I have taken the rules from the [Irving Finkel v. Tom Scott 2017 Rules](https://www.mastersofgames.com/rules/royal-ur-rules.htm?srsltid=AfmBOoo6QlxweiQLRuOJWrx_CzGTnTRkXtQ_8NjSnufVDV9ew_w6NprL) set as I personally find them the most fun. With these rules, games typically take 20 to 30 minutes.
 
 ## Rules
-1. You may split your moves between pieces
+1. You cannot split your moves between pieces
 2. You remove an opponent's piece by landing on it
 3. You cannot land on your own piece
 4. If you land on a rosette you must roll again
