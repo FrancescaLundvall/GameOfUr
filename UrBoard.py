@@ -34,7 +34,7 @@ def roll_dice():
 class GameOfUr:
     def __init__(self):
 
-        self.rules = "\n=== The Royal Game of Ur ===\n\nRULES\n1. You may split your moves between pieces\n2. You remove an opponent's piece by landing on it\n3. You cannot land on your own piece\n4. If you land on a rosette you must roll again\n5. The first person to get all their pieces off the board wins\n6. If you do not have any valid moves you must skip your turn\n7. You cannot capture an opponent's piece when it is on the central rosette\n\n=== ENTER q TO QUIT ===\n "
+        self.rules = "\n=== The Royal Game of Ur ===\n\nRULES\n1. You may split your moves between pieces\n2. You remove an opponent's piece by landing on it\n3. You cannot land on your own piece\n4. If you land on a rosette you must roll again\n5. The first person to get all their pieces off the board wins\n6. You can only exit on an exact throw\n\n=== ENTER q TO QUIT ===\n "
         # Initialize empty board
         # 0 = empty square, 'a'-'g' = player 1, 'A'-'G' = player 2, 'R' = rosette, 3 = blank space
         self.p1_sidelines = ['a', 'b', 'c', 'd', 'e', 'f', 'g']
