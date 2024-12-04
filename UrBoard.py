@@ -34,7 +34,8 @@ def roll_dice():
 class GameOfUr:
     def __init__(self):
 
-        self.rules = "\n=== The Royal Game of Ur ===\n\nRULES\n1. You may split your moves between pieces\n2. You remove an opponent's piece by landing on it\n3. You cannot land on your own piece\n4. If you land on a rosette you must roll again\n5. The first person to get all their pieces off the board wins\n6. You can only exit on an exact throw\n\n=== ENTER q TO QUIT ===\n "
+        self.rules = "\n=== The Royal Game of Ur ===\n\nRULES\n1. You cannot split your moves between pieces\n2. You remove an opponent's piece by landing on it\n3. You cannot land on your own piece\n4. If you land on a rosette you must roll again\n5. The first person to get all their pieces off the board wins\n6. You can only exit on an exact throw\n\n=== ENTER q TO QUIT ===\n=== ENTER s TO SKIP TURN ===\n "
+        
         # Initialize empty board
         # 0 = empty square, 'a'-'g' = player 1, 'A'-'G' = player 2, 'R' = rosette, 3 = blank space
         self.p1_sidelines = ['a', 'b', 'c', 'd', 'e', 'f', 'g']
@@ -53,9 +54,6 @@ class GameOfUr:
 
         #When TRUE, player get's an extra turn, when FALSE they do not
         self.rollAgain = False
-
-        #Flag to end gameplay loop
-        self.playing = True
     
     def display_board(self):
         # Convert board values to display characters
@@ -79,8 +77,6 @@ class GameOfUr:
         p2_finished_display = [convert_to_display(x) for x in self.p2_finished]
 
         # Display the board
-        # print("\n=== The Royal Game of Ur ===\n")
-        
         # Print Board
         print("Finished Pieces:", ''.join(p1_finished_display))
         print("        ", ''.join(p1_sidelines_display))
@@ -111,11 +107,11 @@ class GameOfUr:
                 if not self.p1_sidelines:
                     raise InvalidMoveError("No pieces available to move onto board")
                 new_piece = self.p1_sidelines.pop(0)
+                
                 if self.test_if_square_free(playerID, self.p1_path, 4-moves): 
                     self.p1_path[4-moves] = new_piece
                     self.display_board()
                 
-                #TODO: remove nested new move call 
                 if self.p1_path.index(new_piece) == 0:
                     self.rollAgain = True
                     return True
@@ -126,10 +122,11 @@ class GameOfUr:
                 if not self.p1_sidelines:
                     raise InvalidMoveError("No pieces available to move onto board")
                 new_piece = self.p2_sidelines.pop(0)
+                
                 if self.test_if_square_free(playerID, self.p2_path, 4-moves): 
                     self.p2_path[4-moves] = new_piece
                     self.display_board()
-                #TODO: remove nested new move call 
+                
                 if self.p2_path.index(new_piece) == 0:
                     self.rollAgain = True
                     return True
@@ -137,6 +134,7 @@ class GameOfUr:
                     return True     
             else:
                 raise InvalidMoveError("Not a valid player")
+        
         except InvalidMoveError as e:
             print(f"Invalid move: {str(e)}")
             raise InvalidMoveError(str(e), new_piece, playerID, self) from e
@@ -196,19 +194,18 @@ class GameOfUr:
                         p1_position = len(self.p1_path) - p1_path_moves
                         
                         if p1_position == 7:
-                            if self.test_if_square_free(playerID, self.shared, p1_position):
+                            if self.test_if_square_free(playerID, self.p1_path, p1_position):
                                 self.p1_path[p1_position] = piece
                                 self.return_index_to_default('shared', position)
                                 self.display_board()
                 
                         elif p1_position == 6:
-                            if self.test_if_square_free(playerID, self.shared, p1_position):
+                            if self.test_if_square_free(playerID, self.p1_path, p1_position):
                                 self.p1_path[p1_position] = piece
                                 self.return_index_to_default('shared', position)
                                 self.display_board()
                                 self.rollAgain = True 
                         
-                        #TODO: RULE NEEDED: player can only remove piece from board if they have the exact number of moves required to do so
                         elif p1_position == 5:
                             self.p1_finished.append(piece)
                             self.return_index_to_default('shared', position)
@@ -221,15 +218,12 @@ class GameOfUr:
                         if self.test_if_square_free(playerID, self.shared, new_position):
                             self.shared[new_position] = piece
                             self.return_index_to_default('shared', position)
+                            if new_position == 3:
+                                self.rollAgain = True
                             self.display_board()
-                       
-                    if self.shared.index(piece) == 3:
-                        self.rollAgain = True
-                        return True 
-                    else:
-                        return True
 
-            if playerID == 'player2':
+
+            elif playerID == 'player2':
                 if piece in self.p2_path:
                     position = self.p2_path.index(piece)
                     new_position = position - moves
@@ -241,18 +235,19 @@ class GameOfUr:
                             self.shared[index] = piece
                             self.return_index_to_default('p2_path', position)
                             self.display_board()
+                    
                     elif position == 6 and moves == 1:
                         # MOVE OFF BOARD
-                        #TODO: RULE NEEDED: player can only remove piece from board if they have the exact number of moves required to do so
                         self.p2_finished.append(piece)
                         self.return_index_to_default('p2_path', position)
                         self.display_board()  
+                    
                     elif new_position == 5:
                         # MOVE OFF BOARD
-                        #TODO: RULE NEEDED: player can only remove piece from board if they have the exact number of moves required to do so
                         self.p2_finished.append(piece)
                         self.return_index_to_default('p2_path', position)
                         self.display_board()
+                    
                     elif new_position in [3, 4]:
                         raise InvalidMoveError("You must move past the exact number of remaining squares to leave the board")
                     
@@ -262,7 +257,6 @@ class GameOfUr:
                             self.return_index_to_default('p2_path', position)
                             self.display_board()
                             
-                    
                     if piece in self.p2_path and self.p2_path.index(piece) in [0, 6]:
                         self.rollAgain = True
                         return True 
@@ -281,20 +275,19 @@ class GameOfUr:
                             raise InvalidMoveError("Move would place piece beyond the board")
                         
                         if p2_position == 7:
-                            if self.test_if_square_free(playerID, self.shared, p2_position):
-                                self.p2_path[p2_position] = piece
+                            if self.test_if_square_free(playerID, self.p2_path, p2_position):
+                                self.p2_path[7] = piece
                                 self.return_index_to_default('shared', position)
                                 self.display_board()
                 
                         elif p2_position == 6:
-                            if self.test_if_square_free(playerID, self.shared, p2_position):
-                                self.p2_path[p2_position] = piece
+                            if self.test_if_square_free(playerID, self.p2_path, p2_position):
+                                self.p2_path[6] = piece
                                 self.return_index_to_default('shared', position)
                                 self.display_board()
                                 self.rollAgain = True 
             
                         elif p2_position == 5:
-                            #TODO: RULE NEEDED: player can only remove piece from board if they have the exact number of moves required to do so
                             self.p2_finished.append(piece)
                             self.return_index_to_default('shared', position)
                             self.display_board()
@@ -306,13 +299,10 @@ class GameOfUr:
                         if self.test_if_square_free(playerID, self.shared, new_position):
                             self.shared[new_position] = piece
                             self.return_index_to_default('shared', position)
+                            if new_position == 3:
+                                self.rollAgain = True
                             self.display_board()
-                       
-                        if self.shared.index(piece) == 3:
-                            self.rollAgain = True
-                            return True
-                        else:
-                            return True 
+            return True
         
         except InvalidMoveError as e:
             raise InvalidMoveError(str(e), piece=piece, player=playerID, game=self) from e
@@ -328,8 +318,6 @@ class GameOfUr:
             elif list == self.shared and index == 3:
                 if self.shared[3] in self.p2_pieces:
                     raise InvalidMoveError("You cannot capture an opponent's piece when it is on a Rosette")
-                # elif self.shared[3] in self.p1_pieces:
-                #     raise InvalidMoveError(f"Invalid move: {list[index]} at target square.")
                 else:
                     return True
             elif list[index] in self.p2_pieces:
@@ -341,17 +329,15 @@ class GameOfUr:
         if playerID == 'player2':
             if list[index] in self.p2_pieces:
                 raise InvalidMoveError(f"Invalid move: {list[index]} at target square.")
+            elif list == self.shared and index == 3:
+                if self.shared[3] in self.p1_pieces:
+                    raise InvalidMoveError("You cannot capture an opponent's piece when it is on a Rosette")
+                else:
+                    return True
             elif list[index] in self.p1_pieces:
                 print(f"Captured opponent's piece {list[index]}")
                 self.p1_sidelines.append(list[index])
                 return True
-            elif list == self.shared and index == 3:
-                if self.shared[3] in self.p1_pieces:
-                    raise InvalidMoveError("You cannot capture an opponent's piece when it is on a Rosette")
-                elif self.shared[3] in self.p2_pieces:
-                    raise InvalidMoveError(f"Invalid move: {list[index]} at target square.")
-                else:
-                    return True
             else:
                 return True
 
@@ -365,19 +351,21 @@ class GameOfUr:
 
 
     def new_move(self, playerID):
-        print("Enter q to quit the game\nEnter s to skip your turn")
         dice_roll = roll_dice()
-        remaining_moves = dice_roll
+        moves = dice_roll
         print(f"{playerID} rolled: {dice_roll}")
-        if remaining_moves == 0:
+        if moves == 0:
             print(f"Skipping {playerID}'s turn")
             self.playerFlag = not self.playerFlag
         else:    
-            while remaining_moves > 0:
+            while moves > 0:
                 try:
-                    piece = self.get_player_input(f"{playerID} has {remaining_moves} moves remaining.\nEnter letter to choose piece from board or 1 to add a new piece to the board: ")
+                    # piece = self.get_player_input(f"{playerID} has {remaining_moves} moves remaining.\nEnter letter to choose piece from board or 1 to add a new piece to the board: ")
+                    piece = self.get_player_input(f"{playerID} - Enter letter to choose piece from board OR 1 to add a new piece to the board: ")
+
                     if piece == 's':
                         break
+                    
                     if piece != '1':
                         if playerID == 'player1' and piece not in self.p1_pieces:
                             print("Piece must belong to Player 1")
@@ -387,21 +375,23 @@ class GameOfUr:
                             continue  
                         if piece in self.p1_finished or piece in self.p2_finished:
                             print("Piece has finished game, please choose a piece still in play")             
-                    # TODO: Add handling for if the piece they enter is invalid to catch this before entering the for loop below
-                    if piece == '1':
-                        moves = int(self.get_player_input(f"How many spaces do you want to move the new piece?:"))
-                    else:
-                        moves = int(self.get_player_input(f"How many spaces do you want to move {piece}?: "))
-                    if moves == 's':
+                    
+                    # if piece == '1':
+                    #     moves = int(self.get_player_input(f"How many spaces do you want to move the new piece?:"))
+                    
+                    # else:
+                    #     moves = int(self.get_player_input(f"How many spaces do you want to move {piece}?: "))
+                    
+                    if piece == 's':
                         break
-                    if moves <= 0:  
-                        print("Moves must be greater than 0")
-                        continue
-                        # while moves <= 0:
-                        #     moves = int(input("Moves cannot be 0 or negative. Please try again with a larger value:"))
-                    if moves > remaining_moves:
-                        print(f"{moves} is greater than {remaining_moves} remaining moves")
-                        continue
+
+                    # if moves <= 0:  
+                    #     print("Moves must be greater than 0")
+                    #     continue
+
+                    # if moves > remaining_moves:
+                    #     print(f"{moves} is greater than {remaining_moves} remaining moves")
+                    #     continue
                     
                     if piece == '1':
                         try:
@@ -418,10 +408,10 @@ class GameOfUr:
                             continue
                     
                     if success:
-                        remaining_moves = remaining_moves - moves
+                        moves = moves - moves
                
-            # except ValueError as e:
-            #     print(f"Value error:{e} ")
+                except ValueError as e:
+                    print(f"Value error:{e} ")
                 except KeyboardInterrupt:
                     print("\nGame interrupted by user (Ctrl+C)")
                 except Exception as e:
@@ -447,10 +437,10 @@ def main():
                 game.new_move("player1") 
             else:
                 game.new_move("player2")
-            if len(game.p1_finished) == 6:
+            if len(game.p1_finished) == 7:
                 print("Congratulations! Player 1 has won the game")
                 return False
-            if len(game.p2_finished) == 6:
+            if len(game.p2_finished) == 7:
                 print("Congratulations! Player 2 has won the game")
                 return False
         except ValueError:
